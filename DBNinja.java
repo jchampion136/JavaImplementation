@@ -105,6 +105,7 @@ public final class DBNinja {
 	
 	public static int addCustomer(Customer c) throws SQLException, IOException
 	 {
+		 connect_to_db();
 		/*
 		 * This method adds a new customer to the database.
 		 * 
@@ -315,54 +316,134 @@ public final class DBNinja {
 	}
 	
 	
-	public static ArrayList<Pizza> getPizzas(Order o) throws SQLException, IOException 
-	{
-		/*
-		 * Build an ArrayList of all the Pizzas associated with the Order.
-		 * 
-		 */
-		return null;
-	}
+	public static ArrayList<Pizza> getPizzas(Order o) throws SQLException, IOException {
+		connect_to_db();
+		ArrayList<Pizza> pizza = new ArrayList<>();
 
+		//Work on query statement
+		String query = "SELECT * FROM pizza WHERE ordertable_OrderID = ?";
+		PreparedStatement statement = conn.prepareStatement(query);
+
+		ResultSet result = statement.executeQuery(query);
+		while (result.next()) {
+			Pizza p = new Pizza(
+					result.getInt("pizza_PizzaID"),
+					result.getString("pizza_Size"),
+					result.getString("pizza_CrustType"),
+					o.getOrderID(),
+					result.getString("pizza_PizzaState"),
+					result.getString("pizza_PizzaDate"),
+					result.getDouble("pizza_CustPrice"),
+					result.getDouble("pizza_BusPrice")
+			);
+			pizza.add(p);
+		}
+			return pizza;
+	}
 	public static ArrayList<Discount> getDiscounts(Order o) throws SQLException, IOException 
 	{
-		/* 
-		 * Build an array list of all the Discounts associted with the Order.
-		 * 
-		 */
+		connect_to_db();
+		ArrayList<Discount> discount = new ArrayList<>();
 
-		return null;
+		//Query?
+		String query = "SELECT * FROM order_discount WHERE ordertable_OrderID = ?";
+		PreparedStatement stmt = conn.prepareStatement(query);
+		stmt.setInt(1, o.getOrderID());
+
+
+		Statement statement = conn.createStatement();
+
+		ResultSet result = statement.executeQuery(query);
+
+		while (result.next()) {
+			Discount d = new Discount(
+					result.getInt("discount_DiscountID"),
+					result.getString("discount_DiscountName"),
+					result.getDouble("discount_Amount"),
+					result.getBoolean("discount_IsPercent")
+			);
+			discount.add(d);
+		}
+
+
+
+		return discount;
 	}
+
 
 	public static ArrayList<Discount> getDiscounts(Pizza p) throws SQLException, IOException 
 	{
-		/* 
-		 * Build an array list of all the Discounts associted with the Pizza.
-		 * 
-		 */
-	
-		return null;
+		connect_to_db();
+		ArrayList<Discount> discount = new ArrayList<>();
+
+		//Query?
+		String query = "SELECT * FROM pizza_discount WHERE ordertable_OrderID = ?";
+		PreparedStatement stmt = conn.prepareStatement(query);
+		stmt.setInt(1, p.getOrderID());
+
+
+		Statement statement = conn.createStatement();
+
+		ResultSet result = statement.executeQuery(query);
+
+		while (result.next()) {
+			Discount d = new Discount(
+					result.getInt("discount_DiscountID"),
+					result.getString("discount_DiscountName"),
+					result.getDouble("discount_Amount"),
+					result.getBoolean("discount_IsPercent")
+			);
+			discount.add(d);
+		}
+
+
+
+		return discount;
 	}
 
-	public static double getBaseCustPrice(String size, String crust) throws SQLException, IOException 
-	{
-		/* 
-		 * Query the database fro the base customer price for that size and crust pizza.
-		 * 
-		*/
-		return 0.0;
+	public static double getBaseCustPrice(String size, String crust) throws SQLException, IOException {
+		connect_to_db();
+
+		String query = "SELECT baseprice_CustPrice FROM baseprice WHERE baseprice_Size = ? AND baseprice_CrustType = ?";
+		PreparedStatement stmt = conn.prepareStatement(query);
+		stmt.setString(1, size);
+		stmt.setString(2, crust);
+
+		ResultSet result = stmt.executeQuery();
+		double price = 0.0;
+
+		if (result.next()) {
+			price = result.getDouble("baseprice_CustPrice");
+		}
+
+		return price;
 	}
 
-	public static double getBaseBusPrice(String size, String crust) throws SQLException, IOException 
-	{
-		/* 
-		 * Query the database fro the base business price for that size and crust pizza.
-		 * 
-		*/
-		return 0.0;
+
+	public static double getBaseBusPrice(String size, String crust) throws SQLException, IOException {
+		connect_to_db();
+
+		String query = "SELECT baseprice_BusPrice FROM baseprice WHERE baseprice_Size = ? AND baseprice_CrustType = ?";
+		PreparedStatement stmt = conn.prepareStatement(query);
+		stmt.setString(1, size);
+		stmt.setString(2, crust);
+
+		ResultSet result = stmt.executeQuery();
+		double price = 0.0;
+
+		if (result.next()) {
+			price = result.getDouble("baseprice_BusPrice");
+		}
+
+		result.close();
+		stmt.close();
+		conn.close();
+
+		return price;
 	}
 
-	
+
+
 	public static void printToppingReport() throws SQLException, IOException
 	{
 		/*
