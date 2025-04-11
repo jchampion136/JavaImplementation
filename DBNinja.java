@@ -314,8 +314,6 @@ public final class DBNinja {
 		 * 
 		 * */
 	}
-	
-	
 	public static ArrayList<Pizza> getPizzas(Order o) throws SQLException, IOException {
 		connect_to_db();
 		ArrayList<Pizza> pizza = new ArrayList<>();
@@ -441,9 +439,6 @@ public final class DBNinja {
 
 		return price;
 	}
-
-
-
 	public static void printToppingReport() throws SQLException, IOException
 	{
 		/*
