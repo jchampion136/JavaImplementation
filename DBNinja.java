@@ -106,26 +106,47 @@ public final class DBNinja {
 	public static int addCustomer(Customer c) throws SQLException, IOException
 	 {
 		 connect_to_db();
-		/*
-		 * This method adds a new customer to the database.
-		 * 
-		 */
+		 String query = "INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum) VALUES (?, ?, ?)";
+		 PreparedStatement statement = conn.prepareStatement(query);
+
+		 statement.setString(1,c.getFName());
+		 statement.setString(2,c.getLName());
+		 statement.setString(3,c.getPhone());
+		 statement.executeUpdate();
+
+		 //ResultSet result = statement.getGeneratedKeys();
 
 		 return -1;
 	}
 
 	public static void completeOrder(int OrderID, order_state newState ) throws SQLException, IOException
 	{
-		/*
-		 * Mark that order as complete in the database.
-		 * Note: if an order is complete, this means all the pizzas are complete as well.
-		 * However, it does not mean that the order has been delivered or picked up!
-		 *
-		 * For newState = PREPARED: mark the order and all associated pizza's as completed
-		 * For newState = DELIVERED: mark the delivery status
-		 * FOR newState = PICKEDUP: mark the pickup status
-		 * 
-		 */
+		connect_to_db();
+
+		if (newState == order_state.PREPARED) {
+			String order_update = "UPDATE ordertable SET ordertable_IsComplete = 1 WHERE ordertable_OrderID = ?";
+			PreparedStatement stmt_update1 = conn.prepareStatement(order_update);
+			stmt_update1.setInt(1,OrderID);
+			stmt_update1.executeUpdate();
+
+			String update_pizza = "UPDATE pizza SET pizza_PizzaState = 'complete' WHERE ordertable_OrderID = ?";
+			PreparedStatement pizza_order = conn.prepareStatement(update_pizza);
+			stmt_update1.setInt(1,OrderID);
+			stmt_update1.executeUpdate();
+		}
+
+		else if(newState == order_state.DELIVERED) {
+			String delivery_update = "UPDATE delivery SET delivery_IsDelivered = 1 WHERE ordertable_OrderID = ?";
+			PreparedStatement stmt_update2 = conn.prepareStatement(delivery_update);
+			stmt_update2.setInt(1,OrderID);
+			stmt_update2.executeUpdate();
+		}
+		else if(newState == order_state.PICKEDUP) {
+			String pickup_update = "UPDATE pickup SET pickup_IsPickedUP = 1 WHERE ordertable_OrderID = ?";
+			PreparedStatement stmt_update3 = conn.prepareStatement(pickup_update);
+			stmt_update3.setInt(1,OrderID);
+			stmt_update3.executeUpdate();
+		}
 
 	}
 
@@ -275,44 +296,112 @@ public final class DBNinja {
 	}
 
 
-	public static ArrayList<Topping> getToppingList() throws SQLException, IOException 
+	public static ArrayList<Topping> getToppingList() throws SQLException, IOException
 	{
-		/*
-		 * Query the database for the aviable toppings and 
-		 * return an arrayList of all the available toppings. 
-		 * Don't forget to order the data coming from the database appropriately.
-		 * 
-		 */
-		return null;
+		connect_to_db();
+		ArrayList<Topping> toppings = new ArrayList<>();
+
+		String query = "SELECT * FROM topping ORDER BY topping_TopName ASC";
+		PreparedStatement stmt = conn.prepareStatement(query);
+		ResultSet rs = stmt.executeQuery();
+
+		while (rs.next()) {
+			Topping t = new Topping(
+					rs.getInt("topping_TopID"),
+					rs.getString("topping_TopName"),
+					rs.getDouble("topping_SmallAMT"),
+					rs.getDouble("topping_MedAMT"),
+					rs.getDouble("topping_LgAMT"),
+					rs.getDouble("topping_XLAMT"),
+					rs.getDouble("topping_CustPrice"),
+					rs.getDouble("topping_BusPrice"),
+					rs.getInt("topping_MinINVT"),
+					rs.getInt("topping_CurINVT")
+			);
+			toppings.add(t);
+		}
+
+		rs.close();
+		stmt.close();
+		conn.close();
+
+		return toppings;
 	}
 
-	public static Topping findToppingByName(String name) throws SQLException, IOException 
+
+	public static Topping findToppingByName(String name) throws SQLException, IOException
 	{
-		/*
-		 * Query the database for the topping using it's name.
-		 * If found, then return a Topping object for the topping.
-		 * If it's not found....then return null
-		 *  
-		 */
-		 return null;
+		connect_to_db();
+
+		String query = "SELECT * FROM topping WHERE topping_TopName = ?";
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setString(1, name);
+		ResultSet rs = statement.executeQuery();
+
+		Topping topping = null;
+		if (rs.next()) {
+			topping = new Topping(
+					rs.getInt("topping_TopID"),
+					rs.getString("topping_TopName"),
+					rs.getDouble("topping_SmallAMT"),
+					rs.getDouble("topping_MedAMT"),
+					rs.getDouble("topping_LgAMT"),
+					rs.getDouble("topping_XLAMT"),
+					rs.getDouble("topping_CustPrice"),
+					rs.getDouble("topping_BusPrice"),
+					rs.getInt("topping_MinINVT"),
+					rs.getInt("topping_CurINVT")
+			);
+		}
+		
+		return topping;
 	}
+
 
 	public static ArrayList<Topping> getToppingsOnPizza(Pizza p) throws SQLException, IOException 
 	{
-		/* 
-		 * This method builds an ArrayList of the toppings ON a pizza.
-		 * The list can then be added to the Pizza object elsewhere in the
-		 */
+		connect_to_db();
+		ArrayList<Topping> toppings = new ArrayList<>();
 
-		return null;	
+		String query = "SELECT t.*, pt.pizza_topping_IsDouble " +
+				"FROM topping t " +
+				"JOIN pizza_topping pt ON t.topping_TopID = pt.topping_TopID " +
+				"WHERE pt.pizza_PizzaID = ?";
+
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setInt(1,p.getPizzaID());
+		ResultSet result = statement.executeQuery();
+
+		while (result.next()) {
+			Topping topping = new Topping(
+					result.getInt("topping_TopID"),
+					result.getString("topping_TopName"),
+					result.getDouble("topping_SmallAMT"),
+					result.getDouble("topping_MedAMT"),
+					result.getDouble("topping_LgAMT"),
+					result.getDouble("topping_XLAMT"),
+					result.getDouble("topping_CustPrice"),
+					result.getDouble("topping_BusPrice"),
+					result.getInt("topping_MinINVT"),
+					result.getInt("topping_CurINVT")
+			);
+
+			//topping.IsDouble(result.getBoolean("pizza_topping_IsDouble"));
+			toppings.add(topping);
+		}
+
+		return toppings;
 	}
 
 	public static void addToInventory(int toppingID, double quantity) throws SQLException, IOException 
 	{
-		/*
-		 * Updates the quantity of the topping in the database by the amount specified.
-		 * 
-		 * */
+		connect_to_db();
+
+		String query = "UPDATE topping SET topping_CurINVT = topping_CurINVT + ? WHERE topping_TopID = ?";
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setDouble(1,quantity);
+		statement.setInt(2,toppingID);
+		statement.executeUpdate();
 	}
 	public static ArrayList<Pizza> getPizzas(Order o) throws SQLException, IOException {
 		connect_to_db();
