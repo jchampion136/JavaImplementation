@@ -530,53 +530,84 @@ public final class DBNinja {
 	}
 	public static void printToppingReport() throws SQLException, IOException
 	{
-		/*
-		 * Prints the ToppingPopularity view. Remember that this view
-		 * needs to exist in your DB, so be sure you've run your createViews.sql
-		 * files on your testing DB if you haven't already.
-		 * 
-		 * The result should be readable and sorted as indicated in the prompt.
-		 * 
-		 * HINT: You need to match the expected output EXACTLY....I would suggest
-		 * you look at the printf method (rather that the simple print of println).
-		 * It operates the same in Java as it does in C and will make your code
-		 * better.
-		 * 
-		 */
+		connect_to_db();
+
+		String query = "SELECT * FROM ToppingPopularity";
+		PreparedStatement statement = conn.prepareStatement(query);
+		ResultSet result = statement.executeQuery();
+
+		System.out.printf("%-15s %-15s\n", "Topping", "Topping Count");
+		System.out.printf("%-15s %-15s\n", "-------", "-------------");
+
+		while (result.next()) {
+			String name = result.getString("Topping");
+			double count = result.getDouble("ToppingCount");
+
+			System.out.printf("%-15s %-15.0f\n", name, count);
+		}
+
+		result.close();
+		statement.close();
+		conn.close();
 	}
 	
 	public static void printProfitByPizzaReport() throws SQLException, IOException 
 	{
-		/*
-		 * Prints the ProfitByPizza view. Remember that this view
-		 * needs to exist in your DB, so be sure you've run your createViews.sql
-		 * files on your testing DB if you haven't already.
-		 * 
-		 * The result should be readable and sorted as indicated in the prompt.
-		 * 
-		 * HINT: You need to match the expected output EXACTLY....I would suggest
-		 * you look at the printf method (rather that the simple print of println).
-		 * It operates the same in Java as it does in C and will make your code
-		 * better.
-		 * 
-		 */
+		connect_to_db();
+
+		String query = "SELECT * FROM ProfitByPizza";
+		PreparedStatement statement = conn.prepareStatement(query);
+		ResultSet result = statement.executeQuery();
+
+		System.out.printf("%-12s %-14s %-8s %-15s\n", "Pizza Size", "Pizza Crust", "Profit", "Last Order Date");
+		System.out.printf("%-12s %-14s %-8s %-15s\n", "----------", "-----------", "------", "---------------");
+
+		while (result.next()) {
+			String size = result.getString("Size");
+			String crust = result.getString("Crust");
+			double profit = result.getDouble("Profit");
+			String month = result.getString("OrderMonth");
+
+			System.out.printf("%-12s %-14s %-8.2f %-15s\n", size, crust, profit, month);
+		}
+
+		result.close();
+		statement.close();
+		conn.close();
 	}
 	
 	public static void printProfitByOrderTypeReport() throws SQLException, IOException
 	{
-		/*
-		 * Prints the ProfitByOrderType view. Remember that this view
-		 * needs to exist in your DB, so be sure you've run your createViews.sql
-		 * files on your testing DB if you haven't already.
-		 * 
-		 * The result should be readable and sorted as indicated in the prompt.
-		 *
-		 * HINT: You need to match the expected output EXACTLY....I would suggest
-		 * you look at the printf method (rather that the simple print of println).
-		 * It operates the same in Java as it does in C and will make your code
-		 * better.
-		 * 
-		 */
+		connect_to_db();
+		String query = "SELECT * FROM ProfitByOrderType";
+		PreparedStatement statement = conn.prepareStatement(query);
+		ResultSet result = statement.executeQuery();
+
+		System.out.printf("%-13s %-13s %-20s %-18s %-10s\n", "Customer Type", "Order Month", "Total Order Price", "Total Order Cost", "Profit");
+		System.out.printf("%-15s %-13s %-20s %-18s %-10s\n", "-------------", "-------------", "-----------------", "----------------", "------");
+
+		while(result.next()) {
+			String type = result.getString("customerType");
+			String month = result.getString("OrderMonth");
+			double totalPrice = result.getDouble("TotalOrderPrice");
+			double totalCost = result.getDouble("TotalOrderCost");
+			double profit = result.getDouble("Profit");
+
+			String displayType;
+			if (type == null) {
+				displayType = "";
+			} else {
+				displayType = type;
+			}
+
+			System.out.printf("%-15s %-13s %-20.2f %-18.2f %-10.2f\n",
+					displayType, month, totalPrice, totalCost, profit);
+		}
+
+		result.close();
+		statement.close();
+		conn.close();
+
 	}
 	
 	
