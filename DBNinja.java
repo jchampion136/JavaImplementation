@@ -173,32 +173,94 @@ public final class DBNinja {
 	
 	public static Order getLastOrder() throws SQLException, IOException 
 	{
-		/*
-		 * Query the database for the LAST order added
-		 * then return an Order object for that order.
-		 * NOTE...there will ALWAYS be a "last order"!
-		 */
-		 return null;
+		connect_to_db();
+
+		String query = "SELECT * FROM orders ORDER BY order_ID DESC LIMIT 1";
+		PreparedStatement statement = conn.prepareStatement(query);
+		ResultSet result = statement.executeQuery();
+
+		Order lastOrder = null;
+
+		//Again, Underscores
+		if (result.next()) {
+			int orderID = result.getInt("order_ID");
+			int custID = result.getInt("cust_ID");
+			String orderType = result.getString("order_Type");
+			String orderDate = result.getString("order_Date");
+			double custPrice = result.getDouble("cust_Price");
+			double busPrice = result.getDouble("bus_Price");
+			boolean isComplete = result.getBoolean("isComplete");
+
+			lastOrder = new Order(orderID, custID, orderType, orderDate, custPrice, busPrice, isComplete);
+		}
+
+		result.close();
+		statement.close();
+		conn.close();
+
+		return lastOrder;
 	}
+
 
 	public static ArrayList<Order> getOrdersByDate(String date) throws SQLException, IOException
 	 {
-		/*
-		 * Query the database for ALL the orders placed on a specific date
-		 * and return a list of those orders.
-		 *  
-		 */
-		 return null;
-	}
+		 connect_to_db();
+		 ArrayList<Order> orderList = new ArrayList<>();
+
+		 String query = "SELECT * FROM orders WHERE order_Date = ? ORDER BY order_ID";
+		 PreparedStatement statement = conn.prepareStatement(query);
+		 statement.setString(1, date);
+
+		 ResultSet result = statement.executeQuery();
+
+		 //May have to remove underscores
+		 while (result.next()) {
+			 int orderID = result.getInt("order_ID");
+			 int custID = result.getInt("cust_ID");
+			 String orderType = result.getString("order_Type");
+			 String orderDate = result.getString("order_Date");
+			 double custPrice = result.getDouble("cust_Price");
+			 double busPrice = result.getDouble("bus_Price");
+			 boolean isComplete = result.getBoolean("isComplete");
+
+			 Order order = new Order(orderID, custID, orderType, orderDate, custPrice, busPrice, isComplete);
+			 orderList.add(order);
+		 }
+
+		 result.close();
+		 statement.close();
+		 conn.close();
+
+		 return orderList;
+	 }
+
 		
 	public static ArrayList<Discount> getDiscountList() throws SQLException, IOException 
 	{
-		/* 
-		 * Query the database for all the available discounts and 
-		 * return them in an arrayList of discounts ordered by discount name.
-		 * 
-		*/
-		return null;
+		connect_to_db();
+		ArrayList<Discount> discounts = new ArrayList<>();
+
+		String query = "SELECT * FROM discount ORDER BY discount_DiscountName";
+		PreparedStatement statement = conn.prepareStatement(query);
+		ResultSet result = statement.executeQuery();
+
+		while (result.next()) {
+			int id = result.getInt("discount_DiscountID");
+			String name = result.getString("discount_DiscountName");
+			double amount = result.getDouble("discount_Amount");
+			boolean isPercent = result.getBoolean("discount_IsPercent");
+
+			Discount discount = new Discount(id, name, amount, isPercent);
+			discounts.add(discount);
+
+
+		}
+
+		result.close();
+		statement.close();
+		conn.close();
+
+		return discounts;
 	}
 
 	public static Discount findDiscountByName(String name) throws SQLException, IOException 
