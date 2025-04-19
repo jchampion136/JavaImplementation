@@ -265,13 +265,29 @@ public final class DBNinja {
 
 	public static Discount findDiscountByName(String name) throws SQLException, IOException 
 	{
-		/*
-		 * Query the database for a discount using it's name.
-		 * If found, then return an OrderDiscount object for the discount.
-		 * If it's not found....then return null
-		 *  
-		 */
-		 return null;
+		connect_to_db();
+		String query = "SELECT * FROM discount WHERE discount_DiscountName = ?";
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setString(1, name);
+
+		ResultSet result = statement.executeQuery();
+
+		Discount discount = null;
+
+		if(result.next()) {
+			int id = result.getInt("discount_DiscountID");
+			String dName = result.getString("discount_DiscountName");
+			double amount = result.getDouble("discount_Amount");
+			boolean isPercent = result.getBoolean("discount_IsPercent");
+
+			discount = new Discount(id, dName, amount, isPercent);
+		}
+
+		result.close();
+		statement.close();
+		conn.close();
+
+		return discount;
 	}
 
 
