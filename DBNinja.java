@@ -303,12 +303,32 @@ public final class DBNinja {
 
 	public static Customer findCustomerByPhone(String phoneNumber)  throws SQLException, IOException 
 	{
-		/*
-		 * Query the database for a customer using a phone number.
-		 * If found, then return a Customer object for the customer.
-		 * If it's not found....then return null
-		 *  
-		 */
+		connect_to_db();
+		Customer customer = null;
+
+		String query = "SELECT * FROM customer WHERE customer_PhoneNum = ?";
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setString(1, phoneNumber);
+
+		ResultSet result = statement.executeQuery();
+
+		if(result.next()) {
+			int ID = result.getInt("customer_CustID");
+			String fname = result.getString("customer_FName");
+			String lname = result.getString("customer_LName");
+			String phone = result.getString("customer_PhoneNum");
+
+			customer = new Customer(ID, fname, lname, phone);
+		}
+
+		result.close();
+		statement.close();
+		conn.close();
+
+		return customer;
+
+	}
+
 		 return null;
 	}
 
