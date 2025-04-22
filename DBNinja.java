@@ -314,21 +314,19 @@ public final class DBNinja {
 
 		if(result.next()) {
 			int ID = result.getInt("customer_CustID");
-			String fname = result.getString("customer_FName");
-			String lname = result.getString("customer_LName");
-			String phone = result.getString("customer_PhoneNum");
+			String fName = result.getString("customer_FName");
+			String lName = result.getString("customer_LName");
+			String phoneNum = result.getString("customer_PhoneNum");
 
-			customer = new Customer(ID, fname, lname, phone);
+			customer = new Customer(ID, fName, lName, phoneNum);
 		}
 
-		result.close();
-		statement.close();
 		conn.close();
 
 		return customer;
 
 	}
-	
+
 
 	public static String getCustomerName(int CustID) throws SQLException, IOException 
 	{
@@ -397,28 +395,27 @@ public final class DBNinja {
 		connect_to_db();
 		ArrayList<Topping> toppings = new ArrayList<>();
 
-		String query = "SELECT * FROM topping ORDER BY topping_TopName ASC";
-		PreparedStatement stmt = conn.prepareStatement(query);
-		ResultSet rs = stmt.executeQuery();
+		String query = "SELECT * FROM topping ORDER BY topping_TopName";
+		PreparedStatement statement = conn.prepareStatement(query);
+		ResultSet result = statement.executeQuery();
 
-		while (rs.next()) {
-			Topping t = new Topping(
-					rs.getInt("topping_TopID"),
-					rs.getString("topping_TopName"),
-					rs.getDouble("topping_SmallAMT"),
-					rs.getDouble("topping_MedAMT"),
-					rs.getDouble("topping_LgAMT"),
-					rs.getDouble("topping_XLAMT"),
-					rs.getDouble("topping_CustPrice"),
-					rs.getDouble("topping_BusPrice"),
-					rs.getInt("topping_MinINVT"),
-					rs.getInt("topping_CurINVT")
-			);
+		while (result.next()) {
+					int topID = result.getInt("topping_TopID");
+					String topName = result.getString("topping_TopName");
+					double smallAMT = result.getDouble("topping_SmallAMT");
+					double medAMT = result.getDouble("topping_MedAMT");
+					double lgMAT = result.getDouble("topping_LgAMT");
+					double xlAMT = result.getDouble("topping_XLAMT");
+					double custPrice = result.getDouble("topping_CustPrice");
+					double busPrice = result.getDouble("topping_BusPrice");
+					int minINVT = result.getInt("topping_MinINVT");
+					int curINVT =result.getInt("topping_CurINVT");
+
+					Topping t = new Topping(topID,topName,smallAMT,medAMT,lgMAT,xlAMT,custPrice,busPrice,minINVT,curINVT);
+
 			toppings.add(t);
 		}
 
-		rs.close();
-		stmt.close();
 		conn.close();
 
 		return toppings;
@@ -432,24 +429,25 @@ public final class DBNinja {
 		String query = "SELECT * FROM topping WHERE topping_TopName = ?";
 		PreparedStatement statement = conn.prepareStatement(query);
 		statement.setString(1, name);
-		ResultSet rs = statement.executeQuery();
+		ResultSet result = statement.executeQuery();
 
 		Topping topping = null;
-		if (rs.next()) {
-			topping = new Topping(
-					rs.getInt("topping_TopID"),
-					rs.getString("topping_TopName"),
-					rs.getDouble("topping_SmallAMT"),
-					rs.getDouble("topping_MedAMT"),
-					rs.getDouble("topping_LgAMT"),
-					rs.getDouble("topping_XLAMT"),
-					rs.getDouble("topping_CustPrice"),
-					rs.getDouble("topping_BusPrice"),
-					rs.getInt("topping_MinINVT"),
-					rs.getInt("topping_CurINVT")
-			);
+		if (result.next()) {
+			int topID = result.getInt("topping_TopID");
+			String topName = result.getString("topping_TopName");
+			double smallAMT =result.getDouble("topping_SmallAMT");
+			double medAMT = result.getDouble("topping_MedAMT");
+			double lgAMT =result.getDouble("topping_LgAMT");
+			double xlAMT =result.getDouble("topping_XLAMT");
+			double custPrice = result.getDouble("topping_CustPrice");
+			double busPrice = result.getDouble("topping_BusPrice");
+			int minINVT =result.getInt("topping_MinINVT");
+			int curINVT =result.getInt("topping_CurINVT");
+
+			topping = new Topping(topID,topName,smallAMT,medAMT,lgAMT,xlAMT,custPrice,busPrice,minINVT,curINVT);
 		}
-		
+
+		conn.close();
 		return topping;
 	}
 
@@ -457,7 +455,7 @@ public final class DBNinja {
 	public static ArrayList<Topping> getToppingsOnPizza(Pizza p) throws SQLException, IOException 
 	{
 		connect_to_db();
-		ArrayList<Topping> toppings = new ArrayList<>();
+		ArrayList<Topping> topping = new ArrayList<>();
 
 		String query = "SELECT t.*, pt.pizza_topping_IsDouble " +
 				"FROM topping t " +
@@ -469,24 +467,24 @@ public final class DBNinja {
 		ResultSet result = statement.executeQuery();
 
 		while (result.next()) {
-			Topping topping = new Topping(
-					result.getInt("topping_TopID"),
-					result.getString("topping_TopName"),
-					result.getDouble("topping_SmallAMT"),
-					result.getDouble("topping_MedAMT"),
-					result.getDouble("topping_LgAMT"),
-					result.getDouble("topping_XLAMT"),
-					result.getDouble("topping_CustPrice"),
-					result.getDouble("topping_BusPrice"),
-					result.getInt("topping_MinINVT"),
-					result.getInt("topping_CurINVT")
-			);
+					int topID = result.getInt("topping_TopID");
+					String topName = result.getString("topping_TopName");
+					double smallAMT = result.getDouble("topping_SmallAMT");
+					double medAMT = result.getDouble("topping_MedAMT");
+					double lgAMT = result.getDouble("topping_LgAMT");
+					double xlAMT = result.getDouble("topping_XLAMT");
+					double custPrice = result.getDouble("topping_CustPrice");
+					double busPrice = result.getDouble("topping_BusPrice");
+					int minINVT = result.getInt("topping_MinINVT");
+					int curINVT = result.getInt("topping_CurINVT");
 
-			//topping.IsDouble(result.getBoolean("pizza_topping_IsDouble"));
-			toppings.add(topping);
+					Topping t = new Topping(topID,topName,smallAMT,medAMT,lgAMT,xlAMT,custPrice,busPrice,minINVT,curINVT);
+
+					//topping.IsDouble(result.getBoolean("pizza_topping_IsDouble"));
+					topping.add(t);
 		}
 
-		return toppings;
+		return topping;
 	}
 
 	public static void addToInventory(int toppingID, double quantity) throws SQLException, IOException 
@@ -501,28 +499,31 @@ public final class DBNinja {
 	}
 	public static ArrayList<Pizza> getPizzas(Order o) throws SQLException, IOException {
 		connect_to_db();
-		ArrayList<Pizza> pizza = new ArrayList<>();
+		ArrayList<Pizza> pizzaList = new ArrayList<>();
 
-		//Work on query statement
 		String query = "SELECT * FROM pizza WHERE ordertable_OrderID = ?";
 		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setInt(1, o.getOrderID()); // Set the order ID for the query
 
-		ResultSet result = statement.executeQuery(query);
+		ResultSet result = statement.executeQuery();
 		while (result.next()) {
-			Pizza p = new Pizza(
-					result.getInt("pizza_PizzaID"),
-					result.getString("pizza_Size"),
-					result.getString("pizza_CrustType"),
-					o.getOrderID(),
-					result.getString("pizza_PizzaState"),
-					result.getString("pizza_PizzaDate"),
-					result.getDouble("pizza_CustPrice"),
-					result.getDouble("pizza_BusPrice")
-			);
-			pizza.add(p);
+			int pizzaID = result.getInt("pizza_PizzaID");
+			String size = result.getString("pizza_Size");
+			String crustType = result.getString("pizza_CrustType");
+			String pizzaState = result.getString("pizza_PizzaState");
+			String date = result.getString("pizza_PizzaDate"); // Or getTimestamp if needed
+			double custPrice = result.getDouble("pizza_CustPrice");
+			double busPrice = result.getDouble("pizza_BusPrice");
+
+			Pizza p = new Pizza(pizzaID, size, crustType, o.getOrderID(), pizzaState, date, custPrice, busPrice);
+			pizzaList.add(p);
 		}
-			return pizza;
+
+		conn.close();
+
+		return pizzaList;
 	}
+
 	public static ArrayList<Discount> getDiscounts(Order o) throws SQLException, IOException 
 	{
 		connect_to_db();
@@ -539,12 +540,13 @@ public final class DBNinja {
 		ResultSet result = statement.executeQuery(query);
 
 		while (result.next()) {
-			Discount d = new Discount(
-					result.getInt("discount_DiscountID"),
-					result.getString("discount_DiscountName"),
-					result.getDouble("discount_Amount"),
-					result.getBoolean("discount_IsPercent")
-			);
+					int discountID = result.getInt("discount_DiscountID");
+					String discountName = result.getString("discount_DiscountName");
+					double amount = result.getDouble("discount_Amount");
+					boolean isPercent = result.getBoolean("discount_IsPercent");
+
+					Discount d = new Discount(discountID,discountName,amount,isPercent);
+
 			discount.add(d);
 		}
 
@@ -559,23 +561,20 @@ public final class DBNinja {
 		connect_to_db();
 		ArrayList<Discount> discount = new ArrayList<>();
 
-		//Query?
+		//Might need to fix Query
 		String query = "SELECT * FROM pizza_discount WHERE ordertable_OrderID = ?";
-		PreparedStatement stmt = conn.prepareStatement(query);
-		stmt.setInt(1, p.getOrderID());
-
-
-		Statement statement = conn.createStatement();
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setInt(1, p.getOrderID());
 
 		ResultSet result = statement.executeQuery(query);
 
 		while (result.next()) {
-			Discount d = new Discount(
-					result.getInt("discount_DiscountID"),
-					result.getString("discount_DiscountName"),
-					result.getDouble("discount_Amount"),
-					result.getBoolean("discount_IsPercent")
-			);
+					int id = result.getInt("discount_DiscountID");
+					String name = result.getString("discount_DiscountName");
+					double amount = result.getDouble("discount_Amount");
+					boolean isPercent = result.getBoolean("discount_IsPercent");
+
+					Discount d = new Discount(id,name,amount,isPercent);
 			discount.add(d);
 		}
 
@@ -607,19 +606,17 @@ public final class DBNinja {
 		connect_to_db();
 
 		String query = "SELECT baseprice_BusPrice FROM baseprice WHERE baseprice_Size = ? AND baseprice_CrustType = ?";
-		PreparedStatement stmt = conn.prepareStatement(query);
-		stmt.setString(1, size);
-		stmt.setString(2, crust);
+		PreparedStatement statement = conn.prepareStatement(query);
+		statement.setString(1, size);
+		statement.setString(2, crust);
 
-		ResultSet result = stmt.executeQuery();
+		ResultSet result = statement.executeQuery();
 		double price = 0.0;
 
 		if (result.next()) {
 			price = result.getDouble("baseprice_BusPrice");
 		}
 
-		result.close();
-		stmt.close();
 		conn.close();
 
 		return price;
@@ -642,8 +639,6 @@ public final class DBNinja {
 			System.out.printf("%-15s %-15.0f\n", name, count);
 		}
 
-		result.close();
-		statement.close();
 		conn.close();
 	}
 	
@@ -667,8 +662,6 @@ public final class DBNinja {
 			System.out.printf("%-12s %-14s %-8.2f %-15s\n", size, crust, profit, month);
 		}
 
-		result.close();
-		statement.close();
 		conn.close();
 	}
 	
@@ -700,8 +693,6 @@ public final class DBNinja {
 					displayType, month, totalPrice, totalCost, profit);
 		}
 
-		result.close();
-		statement.close();
 		conn.close();
 
 	}
