@@ -328,9 +328,7 @@ public final class DBNinja {
 		return customer;
 
 	}
-
-		 return null;
-	}
+	
 
 	public static String getCustomerName(int CustID) throws SQLException, IOException 
 	{
