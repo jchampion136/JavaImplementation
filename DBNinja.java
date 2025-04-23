@@ -153,6 +153,17 @@ public final class DBNinja {
 
 	public static ArrayList<Order> getOrders(int status) throws SQLException, IOException
 	 {
+		 connect_to_db();
+		 ArrayList<Order> orders = new ArrayList<>();
+
+		 String query = "SELECT * FROM ordertable";
+
+		 if(status == 1) {
+			 query += " Where ordertable_isComplete = 0";
+		 } else if (status == 2) {
+			 query += " WHERE ordertable_isComplete = 1";
+
+		 }
 	/*
 	 * Return an ArrayList of orders.
 	 * 	status   == 1 => return a list of open (ie oder is not completed)
@@ -194,8 +205,6 @@ public final class DBNinja {
 			lastOrder = new Order(orderID, custID, orderType, orderDate, custPrice, busPrice, isComplete);
 		}
 
-		result.close();
-		statement.close();
 		conn.close();
 
 		return lastOrder;
@@ -227,8 +236,6 @@ public final class DBNinja {
 			 orderList.add(order);
 		 }
 
-		 result.close();
-		 statement.close();
 		 conn.close();
 
 		 return orderList;
@@ -256,8 +263,6 @@ public final class DBNinja {
 
 		}
 
-		result.close();
-		statement.close();
 		conn.close();
 
 		return discounts;
@@ -283,22 +288,33 @@ public final class DBNinja {
 			discount = new Discount(id, dName, amount, isPercent);
 		}
 
-		result.close();
-		statement.close();
 		conn.close();
 
 		return discount;
 	}
 
 
-	public static ArrayList<Customer> getCustomerList() throws SQLException, IOException 
-	{
-		/*
-		 * Query the data for all the customers and return an arrayList of all the customers. 
-		 * Don't forget to order the data coming from the database appropriately.
-		 * 
-		*/
-		return null;
+	public static ArrayList<Customer> getCustomerList() throws SQLException, IOException {
+		connect_to_db();
+		ArrayList<Customer> customers = new ArrayList<>();
+
+		String query = "SELECT * FROM customer ORDER BY customer_LName, customer_FName, customer_Phone";
+		PreparedStatement statement = conn.prepareStatement(query);
+		ResultSet result = statement.executeQuery();
+
+		while (result.next()) {
+			int custID = result.getInt("customer_CustID");
+			String fName = result.getString("customer_FName");
+			String lName = result.getString("customer_LName");
+			String phone = result.getString("customer_Phone");
+
+			Customer c = new Customer(custID,fName,lName,phone);
+			customers.add(c);
+		}
+
+		conn.close();
+
+		return customers;
 	}
 
 	public static Customer findCustomerByPhone(String phoneNumber)  throws SQLException, IOException 
