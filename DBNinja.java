@@ -156,15 +156,29 @@ public final class DBNinja {
 		 connect_to_db();
 		 ArrayList<Order> orders = new ArrayList<>();
 
-		 String query = "SELECT * FROM ordertable";
-
-		 if(status == 1) {
-			 query += " Where ordertable_isComplete = 0";
+		 String query;
+		 if (status == 1) {
+			 query = "SELECT * FROM ordertable WHERE ordertable_isComplete = 0";
 		 } else if (status == 2) {
-			 query += " WHERE ordertable_isComplete = 1";
-
+			 query = "SELECT * FROM ordertable WHERE ordertable_isComplete = 1";
+		 } else {
+			 query = "SELECT * FROM ordertable";
 		 }
-	/*
+
+		 PreparedStatement statement = conn.prepareStatement(query);
+		 ResultSet result = statement.executeQuery();
+
+		 while (result.next()) {
+			 int orderID = result.getInt("ordertable_OrderID");
+			 String type = result.getString("ordertable_OrderType");
+			 Timestamp date = result.getTimestamp("ordertable_OrderDateTime");
+			 double custPrice = result.getDouble("ordertable_CustPrice");
+			 double busPrice = result.getDouble("ordertable_BusPrice");
+			 int isComplete = result.getInt("ordertable_isComplete");
+			 int custID = result.getInt("customer_CustID");
+		 }
+
+			 /*
 	 * Return an ArrayList of orders.
 	 * 	status   == 1 => return a list of open (ie oder is not completed)
 	 *           == 2 => return a list of completed orders (ie order is complete)
