@@ -25,6 +25,7 @@ public class Menu {
 	public static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
 	public static void main(String[] args) throws SQLException, IOException {
+		System.out.println("Welcome to Pizzas-R-Us!");
 
 
 		int menu_option = 0;
