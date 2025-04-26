@@ -114,41 +114,51 @@ public final class DBNinja {
 		 statement.setString(3,c.getPhone());
 		 statement.executeUpdate();
 
-		 //ResultSet result = statement.getGeneratedKeys();
-
 		 return -1;
 	}
 
-	public static void completeOrder(int OrderID, order_state newState ) throws SQLException, IOException
+	public static void completeOrder(int OrderID, order_state newState) throws SQLException, IOException
 	{
 		connect_to_db();
 
 		if (newState == order_state.PREPARED) {
 			String order_update = "UPDATE ordertable SET ordertable_IsComplete = 1 WHERE ordertable_OrderID = ?";
 			PreparedStatement stmt_update1 = conn.prepareStatement(order_update);
-			stmt_update1.setInt(1,OrderID);
+			stmt_update1.setInt(1, OrderID);
 			stmt_update1.executeUpdate();
 
 			String update_pizza = "UPDATE pizza SET pizza_PizzaState = 'complete' WHERE ordertable_OrderID = ?";
 			PreparedStatement pizza_order = conn.prepareStatement(update_pizza);
-			stmt_update1.setInt(1,OrderID);
-			stmt_update1.executeUpdate();
+			pizza_order.setInt(1, OrderID);
+			pizza_order.executeUpdate();
 		}
+		else if (newState == order_state.DELIVERED) {
+			String order_update = "UPDATE ordertable SET ordertable_IsComplete = 1 WHERE ordertable_OrderID = ?";
+			PreparedStatement stmt_update1 = conn.prepareStatement(order_update);
+			stmt_update1.setInt(1, OrderID);
+			stmt_update1.executeUpdate();
 
-		else if(newState == order_state.DELIVERED) {
 			String delivery_update = "UPDATE delivery SET delivery_IsDelivered = 1 WHERE ordertable_OrderID = ?";
 			PreparedStatement stmt_update2 = conn.prepareStatement(delivery_update);
-			stmt_update2.setInt(1,OrderID);
+			stmt_update2.setInt(1, OrderID);
 			stmt_update2.executeUpdate();
 		}
-		else if(newState == order_state.PICKEDUP) {
+		else if (newState == order_state.PICKEDUP) {
+			String order_update = "UPDATE ordertable SET ordertable_IsComplete = 1 WHERE ordertable_OrderID = ?";
+			PreparedStatement stmt_update1 = conn.prepareStatement(order_update);
+			stmt_update1.setInt(1, OrderID);
+			stmt_update1.executeUpdate();
+
+			// Then mark pickup picked up
 			String pickup_update = "UPDATE pickup SET pickup_IsPickedUP = 1 WHERE ordertable_OrderID = ?";
 			PreparedStatement stmt_update3 = conn.prepareStatement(pickup_update);
-			stmt_update3.setInt(1,OrderID);
+			stmt_update3.setInt(1, OrderID);
 			stmt_update3.executeUpdate();
 		}
 
+		conn.close();
 	}
+
 
 
 	public static ArrayList<Order> getOrders(int status) throws SQLException, IOException
@@ -189,32 +199,31 @@ public final class DBNinja {
 	 *
 	 * You must fully populate the Order object, this includes order discounts,
 	 * and pizzas along with the toppings and discounts associated with them.
-	 * 
+	 *
 	 * Don't forget to order the data coming from the database appropriately.
 	 *
 	 */
-		return null;
+		return orders;
 	}
-	
-	public static Order getLastOrder() throws SQLException, IOException 
+
+	public static Order getLastOrder() throws SQLException, IOException
 	{
 		connect_to_db();
 
-		String query = "SELECT * FROM orders ORDER BY order_ID DESC LIMIT 1";
+		String query = "SELECT * FROM ordertable ORDER BY ordertable_OrderID DESC LIMIT 1";
 		PreparedStatement statement = conn.prepareStatement(query);
 		ResultSet result = statement.executeQuery();
 
 		Order lastOrder = null;
 
-		//Again, Underscores
 		if (result.next()) {
-			int orderID = result.getInt("order_ID");
-			int custID = result.getInt("cust_ID");
-			String orderType = result.getString("order_Type");
-			String orderDate = result.getString("order_Date");
-			double custPrice = result.getDouble("cust_Price");
-			double busPrice = result.getDouble("bus_Price");
-			boolean isComplete = result.getBoolean("isComplete");
+			int orderID = result.getInt("ordertable_OrderID");
+			int custID = result.getInt("customer_CustID");
+			String orderType = result.getString("ordertable_OrderType");
+			String orderDate = result.getString("ordertable_OrderDateTime");
+			double custPrice = result.getDouble("ordertable_CustPrice");
+			double busPrice = result.getDouble("ordertable_BusPrice");
+			boolean isComplete = result.getBoolean("ordertable_isComplete");
 
 			lastOrder = new Order(orderID, custID, orderType, orderDate, custPrice, busPrice, isComplete);
 		}
@@ -225,26 +234,26 @@ public final class DBNinja {
 	}
 
 
+
 	public static ArrayList<Order> getOrdersByDate(String date) throws SQLException, IOException
 	 {
 		 connect_to_db();
 		 ArrayList<Order> orderList = new ArrayList<>();
 
-		 String query = "SELECT * FROM orders WHERE order_Date = ? ORDER BY order_ID";
+		 String query = "SELECT * FROM ordertable WHERE DATE(ordertable_OrderDateTime) = ? ORDER BY ordertable_OrderID";
 		 PreparedStatement statement = conn.prepareStatement(query);
 		 statement.setString(1, date);
 
 		 ResultSet result = statement.executeQuery();
 
-		 //May have to remove underscores
 		 while (result.next()) {
-			 int orderID = result.getInt("order_ID");
-			 int custID = result.getInt("cust_ID");
-			 String orderType = result.getString("order_Type");
-			 String orderDate = result.getString("order_Date");
-			 double custPrice = result.getDouble("cust_Price");
-			 double busPrice = result.getDouble("bus_Price");
-			 boolean isComplete = result.getBoolean("isComplete");
+			 int orderID = result.getInt("ordertable_OrderID");
+			 int custID = result.getInt("customer_CustID");
+			 String orderType = result.getString("ordertable_OrderType");
+			 String orderDate = result.getString("ordertable_OrderDateTime");
+			 double custPrice = result.getDouble("ordertable_CustPrice");
+			 double busPrice = result.getDouble("ordertable_BusPrice");
+			 boolean isComplete = result.getBoolean("ordertable_isComplete");
 
 			 Order order = new Order(orderID, custID, orderType, orderDate, custPrice, busPrice, isComplete);
 			 orderList.add(order);
@@ -312,7 +321,7 @@ public final class DBNinja {
 		connect_to_db();
 		ArrayList<Customer> customers = new ArrayList<>();
 
-		String query = "SELECT * FROM customer ORDER BY customer_LName, customer_FName, customer_Phone";
+		String query = "SELECT * FROM customer ORDER BY customer_LName, customer_FName, customer_PhoneNum";
 		PreparedStatement statement = conn.prepareStatement(query);
 		ResultSet result = statement.executeQuery();
 
@@ -320,7 +329,7 @@ public final class DBNinja {
 			int custID = result.getInt("customer_CustID");
 			String fName = result.getString("customer_FName");
 			String lName = result.getString("customer_LName");
-			String phone = result.getString("customer_Phone");
+			String phone = result.getString("customer_PhoneNum");
 
 			Customer c = new Customer(custID,fName,lName,phone);
 			customers.add(c);
@@ -508,9 +517,8 @@ public final class DBNinja {
 					int minINVT = result.getInt("topping_MinINVT");
 					int curINVT = result.getInt("topping_CurINVT");
 
-					Topping t = new Topping(topID,topName,smallAMT,medAMT,lgAMT,xlAMT,custPrice,busPrice,minINVT,curINVT);
 
-					//topping.IsDouble(result.getBoolean("pizza_topping_IsDouble"));
+					Topping t = new Topping(topID,topName,smallAMT,medAMT,lgAMT,xlAMT,custPrice,busPrice,minINVT,curINVT);
 					topping.add(t);
 		}
 
@@ -533,7 +541,7 @@ public final class DBNinja {
 
 		String query = "SELECT * FROM pizza WHERE ordertable_OrderID = ?";
 		PreparedStatement statement = conn.prepareStatement(query);
-		statement.setInt(1, o.getOrderID()); // Set the order ID for the query
+		statement.setInt(1, o.getOrderID());
 
 		ResultSet result = statement.executeQuery();
 		while (result.next()) {
@@ -541,7 +549,7 @@ public final class DBNinja {
 			String size = result.getString("pizza_Size");
 			String crustType = result.getString("pizza_CrustType");
 			String pizzaState = result.getString("pizza_PizzaState");
-			String date = result.getString("pizza_PizzaDate"); // Or getTimestamp if needed
+			String date = result.getString("pizza_PizzaDate");
 			double custPrice = result.getDouble("pizza_CustPrice");
 			double busPrice = result.getDouble("pizza_BusPrice");
 
@@ -554,12 +562,12 @@ public final class DBNinja {
 		return pizzaList;
 	}
 
-	public static ArrayList<Discount> getDiscounts(Order o) throws SQLException, IOException 
+	public static ArrayList<Discount> getDiscounts(Order o) throws SQLException, IOException
 	{
 		connect_to_db();
 		ArrayList<Discount> discount = new ArrayList<>();
 
-		//Query?
+
 		String query = "SELECT * FROM order_discount WHERE ordertable_OrderID = ?";
 		PreparedStatement stmt = conn.prepareStatement(query);
 		stmt.setInt(1, o.getOrderID());
@@ -570,12 +578,12 @@ public final class DBNinja {
 		ResultSet result = statement.executeQuery(query);
 
 		while (result.next()) {
-					int discountID = result.getInt("discount_DiscountID");
-					String discountName = result.getString("discount_DiscountName");
-					double amount = result.getDouble("discount_Amount");
-					boolean isPercent = result.getBoolean("discount_IsPercent");
+			int discountID = result.getInt("discount_DiscountID");
+			String discountName = result.getString("discount_DiscountName");
+			double amount = result.getDouble("discount_Amount");
+			boolean isPercent = result.getBoolean("discount_IsPercent");
 
-					Discount d = new Discount(discountID,discountName,amount,isPercent);
+			Discount d = new Discount(discountID,discountName,amount,isPercent);
 
 			discount.add(d);
 		}
@@ -586,25 +594,24 @@ public final class DBNinja {
 	}
 
 
-	public static ArrayList<Discount> getDiscounts(Pizza p) throws SQLException, IOException 
+	public static ArrayList<Discount> getDiscounts(Pizza p) throws SQLException, IOException
 	{
 		connect_to_db();
 		ArrayList<Discount> discount = new ArrayList<>();
 
-		//Might need to fix Query
 		String query = "SELECT * FROM pizza_discount WHERE ordertable_OrderID = ?";
 		PreparedStatement statement = conn.prepareStatement(query);
 		statement.setInt(1, p.getOrderID());
 
-		ResultSet result = statement.executeQuery(query);
+		ResultSet result = statement.executeQuery();
 
 		while (result.next()) {
-					int id = result.getInt("discount_DiscountID");
-					String name = result.getString("discount_DiscountName");
-					double amount = result.getDouble("discount_Amount");
-					boolean isPercent = result.getBoolean("discount_IsPercent");
+			int id = result.getInt("discount_DiscountID");
+			String name = result.getString("discount_DiscountName");
+			double amount = result.getDouble("discount_Amount");
+			boolean isPercent = result.getBoolean("discount_IsPercent");
 
-					Discount d = new Discount(id,name,amount,isPercent);
+			Discount d = new Discount(id,name,amount,isPercent);
 			discount.add(d);
 		}
 
@@ -659,14 +666,14 @@ public final class DBNinja {
 		PreparedStatement statement = conn.prepareStatement(query);
 		ResultSet result = statement.executeQuery();
 
-		System.out.printf("%-15s %-15s\n", "Topping", "Topping Count");
-		System.out.printf("%-15s %-15s\n", "-------", "-------------");
+		System.out.printf("%-20s %-20s\n", "Topping", "Topping Count");
+		System.out.printf("%-20s %-20s\n", "-------", "-------------");
 
 		while (result.next()) {
 			String name = result.getString("Topping");
 			double count = result.getDouble("ToppingCount");
 
-			System.out.printf("%-15s %-15.0f\n", name, count);
+			System.out.printf("%-20s %-20.0f\n", name, count);
 		}
 
 		conn.close();
